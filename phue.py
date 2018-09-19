@@ -18,8 +18,9 @@ import json
 import logging
 import os
 import platform
-import sys
 import socket
+import sys
+
 if sys.version_info[0] > 2:
     PY3K = True
 else:
@@ -31,7 +32,6 @@ else:
     import httplib
 
 logger = logging.getLogger('phue')
-
 
 if platform.system() == 'Windows':
     USER_HOME = 'USERPROFILE'
@@ -65,12 +65,12 @@ class PhueRequestTimeout(PhueException):
 
 
 class Light(object):
-
     """ Hue Light object
 
     Light settings can be accessed or set via the properties of this object.
 
     """
+
     def __init__(self, bridge, light_id):
         self.bridge = bridge
         self.light_id = light_id
@@ -89,6 +89,13 @@ class Light(object):
         self._reset_bri_after_on = None
         self._reachable = None
         self._type = None
+
+        self._modelid = None
+        self._uniqueid = None
+        self._manufacturername = None
+        self._luminaireuniqueid = None
+        self._swversion = None
+        self._pointsymbol = None
 
     def __repr__(self):
         # like default python repr function, but add light name
@@ -298,6 +305,42 @@ class Light(object):
         self._type = self._get('type')
         return self._type
 
+    @property
+    def modelid(self):
+        '''Get the modelid of the light [string]'''
+        self._modelid = self._get('modelid')
+        return self._modelid
+
+    @property
+    def uniqueid(self):
+        '''Get the uniqueid of the light [string]'''
+        self._uniqueid = self._get('uniqueid')
+        return self._uniqueid
+
+    @property
+    def manufacturername(self):
+        '''Get the manufacturername of the light [string]'''
+        self._manufacturername = self._get('manufacturername')
+        return self._manufacturername
+
+    @property
+    def luminaireuniqueid(self):
+        '''Get the luminaireuniqueid of the light [string]'''
+        self._luminaireuniqueid = self._get('luminaireuniqueid')
+        return self._luminaireuniqueid
+
+    @property
+    def swversion(self):
+        '''Get the swversion of the light [string]'''
+        self._swversion = self._get('swversion')
+        return self._swversion
+
+    @property
+    def pointsymbol(self):
+        '''Get the pointsymbol of the light [object]'''
+        self._pointsymbol = self._get('pointsymbol')
+        return self._pointsymbol
+
 
 class SensorState(dict):
     def __init__(self, bridge, sensor_id):
@@ -320,12 +363,12 @@ class SensorConfig(dict):
 
 
 class Sensor(object):
-
     """ Hue Sensor object
 
     Sensor config and state can be read and updated via the properties of this object
 
     """
+
     def __init__(self, bridge, sensor_id):
         self.bridge = bridge
         self.sensor_id = sensor_id
@@ -440,7 +483,6 @@ class Sensor(object):
 
 
 class Group(Light):
-
     """ A group of Hue lights, tracked as a group on the bridge
 
     Example:
@@ -527,7 +569,6 @@ class Group(Light):
 
 
 class AllLights(Group):
-
     """ All the Hue lights connected to your bridge
 
     This makes use of the semi-documented feature that
@@ -536,6 +577,7 @@ class AllLights(Group):
     listing the groups, but is accessible if you explicitly
     ask for group 0.
     """
+
     def __init__(self, bridge=None):
         if bridge is None:
             bridge = Bridge()
@@ -573,7 +615,6 @@ class Scene(object):
 
 
 class Bridge(object):
-
     """ Interface to the Hue ZigBee bridge
 
     You can obtain Light objects by calling the get_light_objects method:
@@ -593,6 +634,7 @@ class Bridge(object):
 
 
     """
+
     def __init__(self, ip=None, username=None, config_file_path=None, port=None):
         """ Initialization function.
 
@@ -816,7 +858,8 @@ class Bridge(object):
             'GET', '/api/' + self.username + '/lights/' + str(light_id))
         if parameter is None:
             return state
-        if parameter in ['name', 'type', 'uniqueid', 'swversion']:
+        if parameter in ['name', 'type', 'uniqueid', 'swversion', 'modelid', 'manufacturername',
+                         'luminaireuniqueid', 'pointsymbol']:
             return state[parameter]
         else:
             try:
@@ -878,7 +921,8 @@ class Bridge(object):
         """ Access sensors as a list """
         return self.get_sensor_objects()
 
-    def create_sensor(self, name, modelid, swversion, sensor_type, uniqueid, manufacturername, state={}, config={}, recycle=False):
+    def create_sensor(self, name, modelid, swversion, sensor_type, uniqueid, manufacturername,
+                      state={}, config={}, recycle=False):
         """ Create a new sensor in the bridge. Returns (ID,None) of the new sensor or (None,message) if creation failed. """
         data = {
             "name": name,
@@ -1038,9 +1082,12 @@ class Bridge(object):
         if parameter is None:
             return self.request('GET', '/api/' + self.username + '/groups/' + str(group_id))
         elif parameter == 'name' or parameter == 'lights':
-            return self.request('GET', '/api/' + self.username + '/groups/' + str(group_id))[parameter]
+            return self.request('GET', '/api/' + self.username + '/groups/' + str(group_id))[
+                parameter]
         else:
-            return self.request('GET', '/api/' + self.username + '/groups/' + str(group_id))['action'][parameter]
+            return \
+            self.request('GET', '/api/' + self.username + '/groups/' + str(group_id))['action'][
+                parameter]
 
     def set_group(self, group_id, parameter, value=None, transitiontime=None):
         """ Change light settings for a group
@@ -1078,9 +1125,12 @@ class Bridge(object):
                 logger.error('Group name does not exit')
                 return
             if parameter == 'name' or parameter == 'lights':
-                result.append(self.request('PUT', '/api/' + self.username + '/groups/' + str(converted_group), data))
+                result.append(
+                    self.request('PUT', '/api/' + self.username + '/groups/' + str(converted_group),
+                                 data))
             else:
-                result.append(self.request('PUT', '/api/' + self.username + '/groups/' + str(converted_group) + '/action', data))
+                result.append(self.request('PUT', '/api/' + self.username + '/groups/' + str(
+                    converted_group) + '/action', data))
 
         if 'error' in list(result[-1][0].keys()):
             logger.warn("ERROR: {0} for group {1}".format(
@@ -1179,12 +1229,12 @@ class Bridge(object):
             'localtime': time,
             'description': description,
             'command':
-            {
-                'method': 'PUT',
-                'address': ('/api/' + self.username +
-                            '/lights/' + str(light_id) + '/state'),
-                'body': data
-            }
+                {
+                    'method': 'PUT',
+                    'address': ('/api/' + self.username +
+                                '/lights/' + str(light_id) + '/state'),
+                    'body': data
+                }
         }
         return self.request('POST', '/api/' + self.username + '/schedules', schedule)
 
@@ -1193,7 +1243,8 @@ class Bridge(object):
         :param schedule_id: The ID of the schedule
         :param attributes: Dictionary with attributes and their new values
         """
-        return self.request('PUT', '/api/' + self.username + '/schedules/' + str(schedule_id), data=attributes)
+        return self.request('PUT', '/api/' + self.username + '/schedules/' + str(schedule_id),
+                            data=attributes)
 
     def create_group_schedule(self, name, time, group_id, data, description=' '):
         schedule = {
@@ -1201,12 +1252,12 @@ class Bridge(object):
             'localtime': time,
             'description': description,
             'command':
-            {
-                'method': 'PUT',
-                'address': ('/api/' + self.username +
-                            '/groups/' + str(group_id) + '/action'),
-                'body': data
-            }
+                {
+                    'method': 'PUT',
+                    'address': ('/api/' + self.username +
+                                '/groups/' + str(group_id) + '/action'),
+                    'body': data
+                }
         }
         return self.request('POST', '/api/' + self.username + '/schedules', schedule)
 
