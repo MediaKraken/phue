@@ -1127,8 +1127,8 @@ class Bridge(object):
                 parameter]
         else:
             return \
-            self.request('GET', '/api/' + self.username + '/groups/' + str(group_id))['action'][
-                parameter]
+                self.request('GET', '/api/' + self.username + '/groups/' + str(group_id))['action'][
+                    parameter]
 
     def set_group(self, group_id, parameter, value=None, transitiontime=None):
         """ Change light settings for a group
@@ -1308,6 +1308,7 @@ class Bridge(object):
 
 class Locator(object):
     '''Locates bridges on the local network'''
+
     @staticmethod
     def upnp():
         '''Scan's the network using Simple Service Discovery Protocol (the fastest)
@@ -1331,7 +1332,7 @@ class Locator(object):
 
             def __init__(self, response):
                 self.orig_response = response
-                if(response[0:13] == 'NOTIFY * HTTP'):
+                if (response[0:13] == 'NOTIFY * HTTP'):
                     response = response.replace("NOTIFY * HTTP/1.1", "HTTP/1.1 200 OK")
                 self.parsed_response = response
                 r = httplib.HTTPResponse(self._FakeSocket(response))
@@ -1340,7 +1341,7 @@ class Locator(object):
                 self.usn = r.getheader("usn")
                 self.st = r.getheader("st")
                 self.cache = r.getheader("cache-control")
-                if(self.cache):
+                if (self.cache):
                     self.cache = self.cache.split("=")[1]
                 self.nts = r.getheader("nts")
                 if self.nts:
@@ -1366,7 +1367,7 @@ class Locator(object):
 
             orig_timeout = socket.getdefaulttimeout()
 
-            if(timeout):
+            if (timeout):
                 socket.setdefaulttimeout(timeout)
 
             for _ in range(retries):
@@ -1389,11 +1390,11 @@ class Locator(object):
                     except GeneratorExit:
                         break
 
-                    if(data):
+                    if (data):
                         try:
                             response = SSDPResponse(data)
                             if response.location and (
-                                service == 'ssdp:all' or service == response.st
+                                    service == 'ssdp:all' or service == response.st
                             ):
                                 yield response
                         except GeneratorExit:
@@ -1446,6 +1447,7 @@ class Locator(object):
             record['internalipaddress']
             for record in data
             if 'internalipaddress' in record]
+
 
 if __name__ == '__main__':
     import argparse
