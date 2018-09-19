@@ -549,8 +549,7 @@ class Group(Light):
     def name(self, value):
         old_name = self.name
         self._name = value
-        logger.debug("Renaming light group from '{0}' to '{1}'".format(
-            old_name, value))
+        logger.debug("Renaming light group from '{0}' to '{1}'".format(old_name, value))
         self._set('name', self._name)
 
     @property
@@ -650,7 +649,8 @@ class Bridge(object):
             self.config_file_path = config_file_path
         elif os.getenv(USER_HOME) is not None and os.access(os.getenv(USER_HOME), os.W_OK):
             self.config_file_path = os.path.join(os.getenv(USER_HOME), '.python_hue')
-        elif 'iPad' in platform.machine() or 'iPhone' in platform.machine() or 'iPad' in platform.machine():
+        elif 'iPad' in platform.machine() or 'iPhone' in platform.machine()\
+                or 'iPad' in platform.machine():
             self.config_file_path = os.path.join(os.getenv(USER_HOME), 'Documents', '.python_hue')
         else:
             self.config_file_path = os.path.join(os.getcwd(), '.python_hue')
@@ -706,7 +706,7 @@ class Bridge(object):
         try:
             if mode == 'GET' or mode == 'DELETE':
                 connection.request(mode, address)
-            if mode == 'PUT' or mode == 'POST':
+            elif mode == 'PUT' or mode == 'POST':
                 connection.request(mode, address, json.dumps(data))
 
             logger.debug("{0} {1} {2}".format(mode, address, str(data)))
@@ -823,9 +823,9 @@ class Bridge(object):
                     'name']] = self.lights_by_id[int(light)]
         if mode == 'id':
             return self.lights_by_id
-        if mode == 'name':
+        elif mode == 'name':
             return self.lights_by_name
-        if mode == 'list':
+        elif mode == 'list':
             # return ligts in sorted id order, dicts have no natural order
             return [self.lights_by_id[id] for id in sorted(self.lights_by_id)]
 
@@ -853,9 +853,9 @@ class Bridge(object):
                     'name']] = self.sensors_by_id[int(sensor)]
         if mode == 'id':
             return self.sensors_by_id
-        if mode == 'name':
+        elif mode == 'name':
             return self.sensors_by_name
-        if mode == 'list':
+        elif mode == 'list':
             return self.sensors_by_id.values()
 
     def __getitem__(self, key):
@@ -964,7 +964,8 @@ class Bridge(object):
 
     def create_sensor(self, name, modelid, swversion, sensor_type, uniqueid, manufacturername,
                       state={}, config={}, recycle=False):
-        """ Create a new sensor in the bridge. Returns (ID,None) of the new sensor or (None,message) if creation failed. """
+        """ Create a new sensor in the bridge. Returns (ID,None) of the new sensor
+         or (None,message) if creation failed. """
         data = {
             "name": name,
             "modelid": modelid,
