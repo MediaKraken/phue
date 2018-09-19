@@ -3,19 +3,16 @@
 # This is a basic test file which just tests that things import, which
 # means that this is even vaguely python code.
 
+import os
+
 import fixtures
 import mock
-import os
-import sys
 import testtools
 
-import phue
 import fakes
+import phue
 
-if sys.version_info[0] > 2:
-    httplib = 'http.client.HTTPConnection'
-else:
-    httplib = 'httplib.HTTPConnection'
+httplib = 'http.client.HTTPConnection'
 
 
 class TestRequest(testtools.TestCase):

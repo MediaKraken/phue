@@ -10,29 +10,16 @@ Full featured Python library to control the Philips Hue lighting system.
 - Support for Schedules
 - Support for Scenes
 - Support for Sensors
-- Compatible with Python 2.6.x and upwards
 - Compatible with Python 3
 - No dependencies
 - Simple structure, single phue.py file
 - Work in a procedural way or object oriented way
 
-## Installation
-
-### Using distutils
-
-```
-sudo easy_install phue
-```
-or
-```
-pip install phue
-```
-
-### Manually
+## Installation Manually
 
 phue consists of a single file (phue.py) that you can put in your python search path or in site-packages (or dist-packages depending on the platform)
 You can also simply run it by putting it in the same directory as you main script file or start a python interpreter in the same directory.
-phue works with Python 2.6.x, 2.7.x and 3.x
+phue works with Python 3.x
 
 ## Examples
 
@@ -231,21 +218,6 @@ b.create_group_schedule('My schedule', '2012-11-12T22:34:00', 0, data, 'Bedtime'
 b.delete_schedule(1)
 
 ```
-
-## Using phue with Max/MSP via Jython
-
-You can use the phue library within [Max/MSP](http://www.cycling74.com) by using [Nick Rothwell's](http://www.cassiel.com) Jython objects.  He recently updated the version to support Jython 2.7 which is required for phue to work.
-
-Download it here: https://github.com/cassiel/net.loadbang.jython
-
-## Using phue on iOS via Pythonista
-
-You can use phue on your iOS device via the [Pythonista](http://omz-software.com/pythonista) app.
-This is a great way to build quick prototypes on iOS as you don't need to compile anything, you can code directly from the device itself.
-
-See this little example:
-
-http://www.youtube.com/embed/6K-fxWG6JSs
 
 ## Acknowledgments
 

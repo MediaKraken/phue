@@ -5,8 +5,6 @@
 
 import testtools
 
-import phue  # noqa
-
 
 class TestImport(testtools.TestCase):
 

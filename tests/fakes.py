@@ -1,15 +1,11 @@
 import json
-import sys
+from io import BytesIO as StringIO
+
 import samples
 
-if sys.version_info[0] > 2:
-    from io import BytesIO as StringIO
-    def dump(data):
-        return json.dumps(data).encode('utf-8')
-else:
-    from StringIO import StringIO
-    def dump(data):
-       return json.dumps(data)
+
+def dump(data):
+    return json.dumps(data).encode('utf-8')
 
 
 class Request(object):
