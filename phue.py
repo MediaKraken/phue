@@ -17,36 +17,20 @@ I am in no way affiliated with the Philips organization.
 import json
 import logging
 import os
-import platform
 import socket
-import sys
 
-if sys.version_info[0] > 2:
-    PY3K = True
-else:
-    PY3K = False
-
-if PY3K:
-    import http.client as httplib
-else:
-    import httplib
+import http.client as httplib
 
 logger = logging.getLogger('phue')
 
-if platform.system() == 'Windows':
-    USER_HOME = 'USERPROFILE'
-else:
-    USER_HOME = 'HOME'
+USER_HOME = 'HOME'
 
 __version__ = '1.1'
 
 
 def is_string(data):
     """Utility method to see if data is a string."""
-    if PY3K:
-        return isinstance(data, str)
-    else:
-        return isinstance(data, str) or isinstance(data, unicode)  # noqa
+    return isinstance(data, str)
 
 
 class PhueException(Exception):
@@ -125,10 +109,7 @@ class Light(object):
     @property
     def name(self):
         '''Get or set the name of the light [string]'''
-        if PY3K:
-            self._name = self._get('name')
-        else:
-            self._name = self._get('name').encode('utf-8')
+        self._name = self._get('name')
         return self._name
 
     @name.setter
@@ -401,10 +382,7 @@ class Sensor(object):
     @property
     def name(self):
         '''Get or set the name of the sensor [string]'''
-        if PY3K:
-            self._name = self._get('name')
-        else:
-            self._name = self._get('name').encode('utf-8')
+        self._name = self._get('name')
         return self._name
 
     @name.setter
@@ -507,14 +485,9 @@ class Group(Light):
             name = group_id
             groups = bridge.get_group()
             for idnumber, info in groups.items():
-                if PY3K:
-                    if info['name'] == name:
-                        self.group_id = int(idnumber)
-                        break
-                else:
-                    if info['name'] == name.decode('utf-8'):
-                        self.group_id = int(idnumber)
-                        break
+                if info['name'] == name:
+                    self.group_id = int(idnumber)
+                    break
             else:
                 raise LookupError("Could not find a group by that name.")
 
@@ -539,10 +512,7 @@ class Group(Light):
     @property
     def name(self):
         '''Get or set the name of the light group [string]'''
-        if PY3K:
-            self._name = self._get('name')
-        else:
-            self._name = self._get('name').encode('utf-8')
+        self._name = self._get('name')
         return self._name
 
     @name.setter
@@ -649,9 +619,6 @@ class Bridge(object):
             self.config_file_path = config_file_path
         elif os.getenv(USER_HOME) is not None and os.access(os.getenv(USER_HOME), os.W_OK):
             self.config_file_path = os.path.join(os.getenv(USER_HOME), '.python_hue')
-        elif 'iPad' in platform.machine() or 'iPhone' in platform.machine()\
-                or 'iPad' in platform.machine():
-            self.config_file_path = os.path.join(os.getenv(USER_HOME), 'Documents', '.python_hue')
         else:
             self.config_file_path = os.path.join(os.getcwd(), '.python_hue')
 
@@ -720,11 +687,7 @@ class Bridge(object):
         result = connection.getresponse()
         response = result.read()
         connection.close()
-        if PY3K:
-            return json.loads(response.decode('utf-8'))
-        else:
-            logger.debug(response)
-            return json.loads(response)
+        return json.loads(response.decode('utf-8'))
 
     def register_app(self):
         """ Register this computer with the Hue bridge hardware and save the resulting access token """
@@ -792,12 +755,8 @@ class Bridge(object):
         """ Lookup a light id based on string name. Case-sensitive. """
         lights = self.get_light()
         for light_id in lights:
-            if PY3K:
-                if name == lights[light_id]['name']:
-                    return light_id
-            else:
-                if name.decode('utf-8') == lights[light_id]['name']:
-                    return light_id
+            if name == lights[light_id]['name']:
+                return light_id
         return False
 
     def get_light_by_name(self, name):
@@ -833,12 +792,8 @@ class Bridge(object):
         """ Lookup a sensor id based on string name. Case-sensitive. """
         sensors = self.get_sensor()
         for sensor_id in sensors:
-            if PY3K:
-                if name == sensors[sensor_id]['name']:
-                    return sensor_id
-            else:
-                if name.decode('utf-8') == sensors[sensor_id]['name']:
-                    return sensor_id
+            if name == sensors[sensor_id]['name']:
+                return sensor_id
         return False
 
     def get_sensor_objects(self, mode='list'):
@@ -868,10 +823,7 @@ class Bridge(object):
             return self.lights_by_id[key]
         except:
             try:
-                if PY3K:
-                    return self.lights_by_name[key]
-                else:
-                    return self.lights_by_name[key.decode('utf-8')]
+                return self.lights_by_name[key]
             except:
                 raise KeyError(
                     'Not a valid key (integer index starting with 1, or light name): ' + str(key))
@@ -1105,12 +1057,8 @@ class Bridge(object):
         """ Lookup a group id based on string name. Case-sensitive. """
         groups = self.get_group()
         for group_id in groups:
-            if PY3K:
-                if name == groups[group_id]['name']:
-                    return int(group_id)
-            else:
-                if name.decode('utf-8') == groups[group_id]['name']:
-                    return int(group_id)
+            if name == groups[group_id]['name']:
+                return int(group_id)
         return False
 
     def get_group(self, group_id=None, parameter=None):
@@ -1321,10 +1269,7 @@ class Locator(object):
         SSDP_MULTICAST_ADDR = '239.255.255.250'
         SSDP_MULTICAST_PORT = 1900
 
-        if PY3K:
-            from urllib.parse import urlparse
-        else:
-            from urlparse import urlparse  # noqa
+        from urllib.parse import urlparse
 
         class SSDPResponse(object):
             class _FakeSocket(BytesIO):
@@ -1434,11 +1379,7 @@ class Locator(object):
 
         result = connection.getresponse()
 
-        if PY3K:
-            data = json.loads(str(result.read(), encoding='utf-8'))
-        else:
-            result_str = result.read()
-            data = json.loads(result_str)
+        data = json.loads(str(result.read(), encoding='utf-8'))
 
         """ close connection after read() is done, to prevent issues with read() """
 
@@ -1479,7 +1420,4 @@ if __name__ == '__main__':
             b = Bridge(args.host, config_file_path=args.config_file_path)
             break
         except PhueRegistrationException as e:
-            if PY3K:
-                input('Press button on Bridge then hit Enter to try again')
-            else:
-                raw_input('Press button on Bridge then hit Enter to try again')  # noqa
+            input('Press button on Bridge then hit Enter to try again')
