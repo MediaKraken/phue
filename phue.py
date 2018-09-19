@@ -114,15 +114,14 @@ class Light(object):
 
     @name.setter
     def name(self, value):
-        old_name = self.name
         self._name = value
         self._set('name', self._name)
 
         logger.debug("Renaming light from '{0}' to '{1}'".format(
-            old_name, value))
+            self.name, value))
 
         self.bridge.lights_by_name[self.name] = self
-        del self.bridge.lights_by_name[old_name]
+        del self.bridge.lights_by_name[self.name]
 
     @property
     def on(self):
@@ -387,15 +386,14 @@ class Sensor(object):
 
     @name.setter
     def name(self, value):
-        old_name = self.name
         self._name = value
         self._set('name', self._name)
 
         logger.debug("Renaming sensor from '{0}' to '{1}'".format(
-            old_name, value))
+            self.name, value))
 
         self.bridge.sensors_by_name[self.name] = self
-        del self.bridge.sensors_by_name[old_name]
+        del self.bridge.sensors_by_name[self.name]
 
     @property
     def modelid(self):
@@ -644,8 +642,7 @@ class Bridge(object):
             pass
 
         version = self.request('GET', '/api/config')['apiversion']
-        idx = version.find('.')
-        idx = version.find('.', idx)
+        idx = version.find('.', version.find('.'))
         if idx >= 0:
             version = version[:idx]
 
@@ -662,9 +659,8 @@ class Bridge(object):
     @name.setter
     def name(self, value):
         self._name = value
-        data = {'name': self._name}
         self.request(
-            'PUT', '/api/' + self.username + '/config', data)
+            'PUT', '/api/' + self.username + '/config', {'name': self._name})
 
     def request(self, mode='GET', address=None, data=None):
         """ Utility function for HTTP GET/PUT requests for the API"""
@@ -765,8 +761,7 @@ class Bridge(object):
         Only works on bridges with firmware 1.3 or higher.
         '''
         name = name.decode('utf-8') if hasattr(name, 'decode') else name
-        lights = self.get_light()
-        for light in lights.values():
+        for light in self.get_light().values():
             if name == light['name']:
                 return light
 
@@ -1140,8 +1135,8 @@ class Bridge(object):
             List of lights to be in the group.
 
         """
-        data = {'lights': [str(x) for x in lights], 'name': name}
-        return self.request('POST', '/api/' + self.username + '/groups/', data)
+        return self.request('POST', '/api/' + self.username + '/groups/',
+                            {'lights': [str(x) for x in lights], 'name': name})
 
     def delete_group(self, group_id):
         return self.request('DELETE', '/api/' + self.username + '/groups/' + str(group_id))
@@ -1192,7 +1187,7 @@ class Bridge(object):
         if len(scenes) == 0:
             logger.warn("run_scene: No scene found {}".format(scene_name))
             return False
-        if len(scenes) == 1:
+        elif len(scenes) == 1:
             self.activate_scene(group.group_id, scenes[0].scene_id, transition_time)
             return True
         # otherwise, lets figure out if one of the named scenes uses
@@ -1320,10 +1315,10 @@ class Locator(object):
                 sock = socket.socket(type=socket.SOCK_DGRAM, proto=socket.IPPROTO_UDP)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-                # pack MCAST_GRP correctly
-                mreq = struct.pack('4sl', socket.inet_aton(SSDP_MULTICAST_ADDR), socket.INADDR_ANY)
-                # Request MCAST_GRP
-                sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+                # Request MCAST_GRP and pack MCAST_GRP correctly
+                sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
+                                struct.pack('4sl', socket.inet_aton(SSDP_MULTICAST_ADDR),
+                                            socket.INADDR_ANY))
 
                 # Bind to all interfaces
                 sock.bind(('0.0.0.0', SSDP_MULTICAST_PORT))
@@ -1336,7 +1331,7 @@ class Locator(object):
                     except GeneratorExit:
                         break
 
-                    if (data):
+                    if data:
                         try:
                             response = SSDPResponse(data)
                             if response.location and (
@@ -1377,9 +1372,7 @@ class Locator(object):
 
         logger.info('Connecting to meethue.com/api/nupnp')
 
-        result = connection.getresponse()
-
-        data = json.loads(str(result.read(), encoding='utf-8'))
+        data = json.loads(str(connection.getresponse().read(), encoding='utf-8'))
 
         """ close connection after read() is done, to prevent issues with read() """
 
